@@ -1,3 +1,5 @@
+import { createClient } from '@vercel/edge-config';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -5,14 +7,21 @@ export default async function handler(req, res) {
 
   try {
     const bodyData = req.body;
-    // 環境変数からGASのURLを読み込む
-    const gasUrl = process.env.GAS_WEBAPP_URL;
+    const edgeConfig = createClient(process.env.EDGE_CONFIG);
+    const companies = await edgeConfig.get('companies');
 
+    // 【防波堤】Edge Configに登録されていない企業コードからのデータ送信は即座に拒否
+    if (!bodyData.companyId || !companies[bodyData.companyId]) {
+      console.warn(`[Security] Unauthorized Company ID blocked: ${bodyData.companyId}`);
+      return res.status(403).json({ error: 'Invalid Corporate Code' });
+    }
+
+    const gasUrl = process.env.GAS_WEBAPP_URL;
     if (!gasUrl) {
       return res.status(500).json({ error: 'GAS URL is not configured' });
     }
 
-    // GASへデータを転送
+    // GASへ安全にデータを横流し
     const response = await fetch(gasUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

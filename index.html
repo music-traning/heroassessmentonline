@@ -29,7 +29,7 @@
     <meta name="twitter:description" content="組織のレジリエンスとコンピテンシーを可視化する診断システム。">
     <meta name="twitter:image" content="https://heroassessmentonline.vercel.app/og-image.png">
 
-    <style>
+<style>
         :root {
             --bg-color: #f4f6f9;
             --text-color: #333333;
@@ -45,7 +45,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
             margin: 0;
             padding: 20px 10px;
             user-select: none;
@@ -62,7 +62,13 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
         }
         
-        h1, h2, h3 { text-align: center; margin-top: 0; color: #111111; font-weight: 600; }
+        h1, h2, h3 { 
+            text-align: center; 
+            margin-top: 0; 
+            color: #111111;
+            font-weight: 600;
+        }
+        
         h1 { font-size: 24px; margin-bottom: 8px; }
         h2 { font-size: 20px; margin-bottom: 16px; }
         h3 { font-size: 16px; margin-bottom: 12px; }
@@ -84,39 +90,145 @@
             transition: all 0.2s ease;
         }
         
-        .btn:hover { background-color: var(--accent-color); color: #ffffff; }
-        .btn:active { transform: translateY(1px); }
-        .btn-danger { border-color: var(--danger-color); color: var(--danger-color); }
-        .btn-danger:hover { background-color: var(--danger-color); color: #ffffff; }
+        .btn:hover {
+            background-color: var(--accent-color);
+            color: #ffffff;
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-danger { 
+            border-color: var(--danger-color); 
+            color: var(--danger-color); 
+        }
+        .btn-danger:hover {
+            background-color: var(--danger-color);
+            color: #ffffff;
+        }
         
         select.btn {
             appearance: none;
             -webkit-appearance: none;
             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%230056b3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8s-1.9-9.3-5.5-12.8z%22/%3E%3C/svg%3E');
-            background-repeat: no-repeat; background-position: right 16px top 50%; background-size: 12px auto;
-            padding-right: 40px; text-align: left;
+            background-repeat: no-repeat;
+            background-position: right 16px top 50%;
+            background-size: 12px auto;
+            padding-right: 40px;
+            text-align: left;
+        }
+        select.btn:hover {
+            background-color: #f8f9fa;
+            color: var(--accent-color);
+        }
+
+        .question-card { 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px;
+            padding: 20px; 
+            margin-bottom: 24px; 
+            background-color: #fafafa;
+            font-size: 16px;
+            line-height: 1.6;
         }
         
-        .question-card { border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-bottom: 24px; background-color: #fafafa; font-size: 16px; line-height: 1.6; }
-        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .option-btn { background: #ffffff; color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 14px 16px; text-align: left; font-family: inherit; font-size: 14px; cursor: pointer; transition: all 0.2s ease; }
-        .option-btn.selected { background: #e8f0fe; border-color: var(--accent-color); color: var(--accent-color); font-weight: 600; }
+        .options { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            margin-top: 20px; 
+        }
+        
+        .option-btn { 
+            background: #ffffff; 
+            color: var(--text-color); 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px;
+            padding: 14px 16px; 
+            text-align: left; 
+            font-family: inherit; 
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover {
+            background-color: #f5f7fa;
+            border-color: #c0c4cc;
+        }
+        .option-btn.selected { 
+            background: #e8f0fe; 
+            border-color: var(--accent-color); 
+            color: var(--accent-color);
+            font-weight: 600;
+        }
 
-        .stat-row { display: flex; align-items: center; margin-bottom: 12px; }
-        .stat-label { width: 90px; font-weight: 600; font-size: 14px; }
-        .stat-bar-container { flex-grow: 1; border: 1px solid var(--border-color); border-radius: 10px; height: 16px; background: #f0f2f5; padding: 2px; overflow: hidden; }
-        .stat-bar { height: 100%; background: var(--accent-color); border-radius: 8px; transition: width 0.4s ease; }
+        .stat-row { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 12px; 
+        }
+        .stat-label { 
+            width: 90px; 
+            font-weight: 600; 
+            font-size: 14px;
+        }
+        .stat-bar-container { 
+            flex-grow: 1; 
+            border: 1px solid var(--border-color); 
+            border-radius: 10px;
+            height: 16px; 
+            background: #f0f2f5; 
+            padding: 2px;
+            overflow: hidden;
+        }
+        .stat-bar { 
+            height: 100%; 
+            background: var(--accent-color); 
+            border-radius: 8px;
+            transition: width 0.4s ease; 
+        }
 
-        .history-item { border-bottom: 1px solid var(--border-color); padding: 12px 0; font-size: 14px; }
-        .affinity-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding: 10px 0; }
+        .history-item { 
+            border-bottom: 1px solid var(--border-color); 
+            padding: 12px 0; 
+            font-size: 14px; 
+        }
+        
+        .affinity-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px dashed var(--border-color); 
+            padding: 10px 0; 
+        }
+        .affinity-item:last-child { border-bottom: none; }
         .affinity-type { font-weight: 600; width: 60px; color: #444; }
         .affinity-title { flex-grow: 1; padding-left: 10px; color: #333; }
         .affinity-score-box { text-align: right; }
         .affinity-relation { font-size: 11px; color: var(--success-color); display: block; font-weight: 500; }
         
         .hidden { display: none !important; }
-        .header-controls { display: flex; justify-content: space-between; margin-bottom: 24px; gap: 10px; }
-        footer { text-align: center; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); }
+        
+        .header-controls { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 24px; 
+            gap: 10px; 
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        details summary::marker {
+            color: var(--accent-color);
+        }
     </style>
 </head>
 <body>
@@ -127,14 +239,42 @@
         <button id="btn-help" onclick="showHelp()" style="background:#ffffff; color:var(--text-muted); border:1px solid var(--border-color); border-radius:4px; padding:6px 12px; font-family: inherit; cursor:pointer; font-size:12px;">クラス一覧</button>
     </div>
 
-    <!-- ホーム画面 -->
     <div id="screen-home">
         <h1 id="ui-title">心理的資本アセスメント</h1>
-        <p id="ui-desc" style="text-align:center; font-size:14px; margin-bottom:30px; color: var(--text-muted);">HEROに基づく組織レジリエンス及びコンピテンシー診断</p>
+        <p id="ui-desc" style="text-align:center; font-size:14px; margin-bottom:20px; color: var(--text-muted);">HEROに基づく組織レジリエンス及びコンピテンシー診断</p>
+
+        <details style="margin-bottom: 12px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px;">
+            <summary id="ui-about-summary" style="font-size: 14px; font-weight: bold; cursor: pointer; color: var(--accent-color); outline: none;">このアプリについて・使い方</summary>
+            <div id="ui-about-content" style="font-size: 13px; line-height: 1.6; color: #444; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);"></div>
+        </details>
+
+        <details style="margin-bottom: 24px; background: #f8fbff; border: 1px solid #b3d7ff; border-radius: 6px; padding: 12px;">
+            <summary id="ui-b2b-summary" style="font-size: 14px; font-weight: bold; cursor: pointer; color: var(--accent-color); outline: none;">法人・組織でのご利用について（管理者様へ）</summary>
+            <div id="ui-b2b-content" style="font-size: 13px; line-height: 1.6; color: #444; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #b3d7ff;"></div>
+        </details>
+
         <button class="btn" onclick="startQuiz(1)" id="btn-tier1">簡易診断 (12問)</button>
         <button class="btn" onclick="startQuiz(2)" id="btn-tier2">標準診断 (28問)</button>
         <button class="btn" onclick="startQuiz(3)" id="btn-tier3">精密診断 (48問)</button>
         
+        <div style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+            <h3 id="ui-quick-affinity-title">人材シナジー・シミュレーター</h3>
+            <p id="ui-quick-affinity-desc" style="font-size: 13px; text-align: center; color: var(--text-muted); margin-bottom: 16px;">2つのタイプを選択し、組織マネジメントにおける相互作用を確認します</p>
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                <select id="affinity-type-a" class="btn" style="width: 47%; margin-bottom: 0; font-size: 13px;"></select>
+                <span style="font-weight: bold; color: #999;">×</span>
+                <select id="affinity-type-b" class="btn" style="width: 47%; margin-bottom: 0; font-size: 13px;"></select>
+            </div>
+            <button class="btn" onclick="checkQuickAffinity()" id="btn-check-affinity">シナジーを算出</button>
+            <div id="quick-affinity-result" style="margin-top: 12px; border: 1px solid #b3d7ff; border-radius: 6px; padding: 16px; background: #f8f9fa;" class="hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong id="quick-result-relation" style="color: var(--accent-color); font-size: 16px;"></strong>
+                    <span id="quick-result-score" style="font-size: 20px; font-weight: bold; color: #222;"></span>
+                </div>
+                <p id="quick-result-desc" style="font-size: 13px; line-height: 1.6; color: #555; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);"></p>
+            </div>
+        </div>
+
         <div style="margin-top: 35px;">
             <h3 id="ui-history-title">受診履歴</h3>
             <div id="history-list"></div>
@@ -142,57 +282,55 @@
         </div>
     </div>
 
-    <!-- 属性入力・同意画面（新規追加） -->
     <div id="screen-entry" class="hidden">
-        <h2 style="font-size: 20px;">受診者情報の入力</h2>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.5;">
-            本アセスメントの結果は、組織全体のレジリエンス分析および最適なプロジェクト編成の参考データとして利用されます。<br>
-            ※個人の不利益な評価に直結することはありません。
-        </p>
+        <h2 id="ui-entry-title" style="font-size: 20px;">受診者情報の入力</h2>
+        <p id="ui-entry-desc" style="font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.5;"></p>
 
         <div style="margin-bottom:16px;">
-            <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">社員番号 または 氏名 <span style="color:var(--danger-color);">*</span></label>
-            <input type="text" id="input-emp-id" placeholder="例: EMP-001 / 山田太郎" style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:4px; box-sizing:border-box; font-size:14px;">
+            <label id="ui-label-comp" style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">企業コード <span style="color:var(--danger-color);">*</span></label>
+            <input type="text" id="input-company-id" style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:4px; box-sizing:border-box; font-size:14px; font-weight:bold; color:var(--accent-color);">
+            <p id="ui-note-comp" style="font-size:12px; color:var(--text-muted); margin-top:4px; margin-bottom:0;"></p>
         </div>
 
         <div style="margin-bottom:16px;">
-            <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">所属部署 <span style="color:var(--danger-color);">*</span></label>
+            <label id="ui-label-emp" style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">社員番号 または 氏名 <span style="color:var(--danger-color);">*</span></label>
+            <input type="text" id="input-emp-id" style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:4px; box-sizing:border-box; font-size:14px;">
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label id="ui-label-dept" style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">所属部署 <span style="color:var(--danger-color);">*</span></label>
             <select id="select-dept" class="btn" style="margin-bottom:0; font-size:14px;">
-                <option value="">選択してください</option>
-                <option value="営業推進部">営業推進部</option>
-                <option value="プロダクト開発部">プロダクト開発部</option>
-                <option value="人事総務部">人事総務部</option>
-                <option value="経営企画室">経営企画室</option>
-                <option value="その他">その他</option>
+                <option value=""></option>
             </select>
         </div>
 
         <div style="margin-bottom:24px;">
-            <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">役職 <span style="color:var(--danger-color);">*</span></label>
+            <label id="ui-label-role" style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px;">役職 <span style="color:var(--danger-color);">*</span></label>
             <select id="select-role" class="btn" style="margin-bottom:0; font-size:14px;">
-                <option value="">選択してください</option>
-                <option value="メンバー">メンバー</option>
-                <option value="マネージャー">マネージャー</option>
-                <option value="役員・事業部長">役員・事業部長</option>
+                <option value=""></option>
             </select>
         </div>
 
         <div style="margin-bottom:24px; background:#fafafa; padding:12px; border:1px solid var(--border-color); border-radius:4px;">
             <label style="display:flex; align-items:flex-start; gap:8px; font-size:13px; cursor:pointer;">
                 <input type="checkbox" id="check-consent" style="margin-top:2px;">
-                <span style="line-height:1.4; color:#333;">データの収集・分析・利用目的に同意し、自身の状態について正確な回答を行うことを誓約します。</span>
+                <span id="ui-text-consent" style="line-height:1.4; color:#333;"></span>
             </label>
         </div>
 
-        <button class="btn" onclick="beginAssessment()" style="background-color: var(--accent-color); color: white;">同意して診断を開始する</button>
-        <button class="btn" onclick="goHome()" style="background: none; border:none; color: var(--text-muted); margin-bottom:0;">キャンセル</button>
+        <button id="btn-entry-start" class="btn" onclick="beginAssessment()" style="background-color: var(--accent-color); color: white;"></button>
+        <button id="btn-entry-cancel" class="btn" onclick="goHome()" style="background: none; border:none; color: var(--text-muted); margin-bottom:0;"></button>
     </div>
 
-    <!-- クイズ画面 -->
     <div id="screen-quiz" class="hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 id="quiz-progress" style="margin: 0; color: var(--text-muted); font-size: 14px;"></h3>
-            <button onclick="abortQuiz()" style="background: none; border: 1px solid var(--border-color); border-radius:4px; color: var(--text-muted); padding: 4px 10px; cursor: pointer; font-family: inherit; font-size: 12px;">中断</button>
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h3 id="quiz-progress" style="margin: 0; color: var(--text-muted); font-size: 14px; font-weight:bold;"></h3>
+                <button id="btn-quiz-abort" onclick="abortQuiz()" style="background: none; border: 1px solid var(--border-color); border-radius:4px; color: var(--text-muted); padding: 4px 10px; cursor: pointer; font-family: inherit; font-size: 12px;">中断</button>
+            </div>
+            <div style="width: 100%; height: 6px; background: #e9ecef; border-radius: 3px; overflow: hidden;">
+                <div id="progress-bar" style="height: 100%; background: var(--accent-color); width: 0%; transition: width 0.4s ease-out;"></div>
+            </div>
         </div>
         <div class="question-card" id="question-text"></div>
         <div class="options" id="quiz-options"></div>
@@ -202,7 +340,6 @@
         </div>
     </div>
 
-    <!-- 結果画面 -->
     <div id="screen-result" class="hidden">
         <div style="text-align: center; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--accent-color);" id="result-type"></div>
         <h2 id="result-title" style="margin-bottom: 24px;"></h2>
@@ -224,18 +361,29 @@
             <span id="result-action" style="font-size: 14px; line-height: 1.6; color: #444;"></span>
         </div>
         
-        <button class="btn" onclick="goHome()" style="margin-top: 24px;" id="btn-home">ホームに戻る</button>
+        <div style="border:1px solid var(--border-color); border-radius: 6px; padding: 16px; margin-top: 20px; background-color: #ffffff;">
+            <strong id="ui-affinity" style="font-size: 14px; display: block; margin-bottom: 12px; color: #333;"></strong>
+            <div id="affinity-list" style="margin-top: 10px; font-size: 13px;"></div>
+        </div>
+        <button class="btn" onclick="shareOnX()" style="margin-top: 24px; background-color: #222222; color: #ffffff; border: none;" id="btn-share-x"></button>
+        <button class="btn" onclick="goHome()" style="margin-top: 10px;" id="btn-home"></button>
     </div>
 
-    <!-- ヘルプ画面 -->
     <div id="screen-help" class="hidden">
         <h2 id="ui-help-title"></h2>
+        <p id="ui-help-desc" style="font-size: 13px; text-align: center; color: var(--text-muted); margin-bottom: 20px;"></p>
         <div id="help-list" style="max-height: 420px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; background: #ffffff;"></div>
-        <button class="btn" onclick="closeHelp()" style="margin-top: 24px;" id="btn-close-help">閉じる</button>
+        <button class="btn" onclick="closeHelp()" style="margin-top: 24px;" id="btn-close-help"></button>
     </div>
 
-    <footer><a href="https://note.com/jazzy_begin" target="_blank" rel="noopener noreferrer">©2026 buro</a>
-    </footer></footer>
+    <footer>
+        <div style="margin-bottom: 20px;">
+            <p id="ui-contact-title" style="font-size: 13px; font-weight: bold; color: var(--text-color); margin-bottom: 8px;"></p>
+            <a href="mailto:deskel358@gmail.com" id="ui-contact-email" style="font-size: 13px; color: var(--accent-color); text-decoration: none;">
+        </div>
+        <p style="margin: 0; font-size: 12px;">© 2026 Universal Make Associate</p>
+    </footer>
+
 </div>
 
 <script src="./data.js"></script>
