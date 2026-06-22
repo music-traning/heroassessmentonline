@@ -1,22 +1,21 @@
-// ==========================================
-// main.js
-// 状態管理・UIレンダリング・イベント制御
-// 企業・組織マネジメント向けリファクタリング版
-// ==========================================
+// URLパラメータから企業IDを取得しローカルストレージに保存
+const urlParams = new URLSearchParams(window.location.search);
+const cid = urlParams.get('cid');
+if (cid) {
+    localStorage.setItem('hero_enterprise_cid', cid);
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
 
 const appState = {
     lang: 'ja',
     screen: 'home', 
     tier: 1,
-    pendingTier: 1,
-    employeeInfo: { id: '', dept: '', role: '' },
+    pendingTier: 1, // 入力フォーム画面中の一時保存用
+    employeeInfo: { id: '', dept: '', role: '' }, // 従業員情報
     questions: [],
     currentIdx: 0,
     answers: {},
     history: JSON.parse(localStorage.getItem('hero_enterprise_history')) || [],
-    affinityA: Object.keys(heroData.types)[0],
-    affinityB: Object.keys(heroData.types)[0],
-    affinityResult: null,
     shareText: ""
 };
 
@@ -26,8 +25,9 @@ function setState(updates) {
 }
 
 function render() {
-   ['home', 'entry', 'quiz', 'result', 'help'].forEach(screen => {
-        document.getElementById(`screen-${screen}`).classList.toggle('hidden', appState.screen !== screen);
+    ['home', 'entry', 'quiz', 'result', 'help'].forEach(screen => {
+        const el = document.getElementById(`screen-${screen}`);
+        if(el) el.classList.toggle('hidden', appState.screen !== screen);
     });
 
     document.getElementById('btn-help').innerText = appState.lang === 'ja' ? "クラス一覧" : "Class List";
@@ -43,54 +43,10 @@ function render() {
 function renderHome() {
     const isJa = appState.lang === 'ja';
     document.getElementById('ui-title').innerText = isJa ? "心理的資本アセスメント" : "HERO Assessment";
-    document.getElementById('ui-desc').innerText = isJa ? "HEROに基づく組織レジリエンス及びコンピテンシー診断" : "Competency & Resilience Assessment based on HERO";
     document.getElementById('btn-tier1').innerText = isJa ? "簡易診断 (12問)" : "Quick Scan (12 Qs)";
     document.getElementById('btn-tier2').innerText = isJa ? "標準診断 (28問)" : "Standard Scan (28 Qs)";
     document.getElementById('btn-tier3').innerText = isJa ? "精密診断 (48問)" : "Deep Scan (48 Qs)";
-    document.getElementById('ui-quick-affinity-title').innerText = isJa ? "人材シナジー・シミュレーター" : "Talent Synergy Simulator";
-    document.getElementById('ui-quick-affinity-desc').innerText = isJa ? "2つのタイプを選択し、組織マネジメントにおける相互作用を確認します" : "Select two types to simulate organizational synergy";
-    document.getElementById('btn-check-affinity').innerText = isJa ? "シナジーを算出" : "Calculate Synergy";
-    document.getElementById('ui-history-title').innerText = isJa ? "受診履歴" : "Assessment History";
-    document.getElementById('btn-clear-history').innerText = isJa ? "履歴を消去" : "Clear History";
-
-    renderAffinityDropdowns();
-    renderQuickAffinityResult();
     renderHistory();
-}
-
-function renderAffinityDropdowns() {
-    const selectA = document.getElementById('affinity-type-a');
-    const selectB = document.getElementById('affinity-type-b');
-    
-    if (selectA.options.length === 0) {
-        for (const [key, data] of Object.entries(heroData.types)) {
-            selectA.add(new Option(`[${key}] ${data.title[appState.lang]}`, key));
-            selectB.add(new Option(`[${key}] ${data.title[appState.lang]}`, key));
-        }
-        selectA.addEventListener('change', (e) => setState({ affinityA: e.target.value, affinityResult: null }));
-        selectB.addEventListener('change', (e) => setState({ affinityB: e.target.value, affinityResult: null }));
-    } else {
-        for (let i = 0; i < selectA.options.length; i++) {
-            const key = selectA.options[i].value;
-            const text = `[${key}] ${heroData.types[key].title[appState.lang]}`;
-            selectA.options[i].text = text;
-            selectB.options[i].text = text;
-        }
-    }
-    selectA.value = appState.affinityA;
-    selectB.value = appState.affinityB;
-}
-
-function renderQuickAffinityResult() {
-    const resultDiv = document.getElementById('quick-affinity-result');
-    if (appState.affinityResult) {
-        resultDiv.classList.remove('hidden');
-        document.getElementById('quick-result-relation').innerText = appState.affinityResult.relation;
-        document.getElementById('quick-result-score').innerText = `シナジー値: ${appState.affinityResult.score}`;
-        document.getElementById('quick-result-desc').innerText = appState.affinityResult.desc;
-    } else {
-        resultDiv.classList.add('hidden');
-    }
 }
 
 function renderHistory() {
@@ -99,27 +55,21 @@ function renderHistory() {
     historyList.innerHTML = '';
     
     if (appState.history.length === 0) {
-        historyList.innerHTML = `<p style="color:var(--text-muted); font-size:14px; text-align:center;">${appState.lang === 'ja' ? '受診履歴はありません' : 'No history available.'}</p>`;
-        clearBtn.classList.add('hidden');
+        historyList.innerHTML = `<p style="color:var(--text-muted); font-size:14px; text-align:center;">受診履歴はありません</p>`;
+        if(clearBtn) clearBtn.classList.add('hidden');
         return;
     }
     
-    clearBtn.classList.remove('hidden');
-    const detailText = appState.lang === 'ja' ? "詳細" : "View";
-
+    if(clearBtn) clearBtn.classList.remove('hidden');
     appState.history.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'history-item';
         div.style.cursor = 'pointer';
         div.onclick = () => loadResultFromHistory(index);
-        
         const titleStr = heroData.types[item.type] ? heroData.types[item.type].title[appState.lang] : item.title;
-        div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+        div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;">
                 <span><span style="color:#888; font-size:12px;">${item.date}</span><br><strong>[${item.type}]</strong> ${titleStr}</span>
-                <span style="color:var(--accent-color); font-size:12px; border:1px solid var(--accent-color); border-radius:3px; padding:4px 8px;">${detailText}</span>
-            </div>
-        `;
+            </div>`;
         historyList.appendChild(div);
     });
 }
@@ -143,36 +93,26 @@ function renderQuiz() {
         optionsContainer.appendChild(btn);
     });
 
-    const isJa = appState.lang === 'ja';
     document.getElementById('btn-prev').disabled = appState.currentIdx === 0;
-    document.getElementById('btn-prev').innerText = isJa ? "戻る" : "Back";
-    document.getElementById('btn-next').innerText = appState.currentIdx === appState.questions.length - 1 
-        ? (isJa ? "結果を解析する" : "Analyze Result") 
-        : (isJa ? "次へ" : "Next");
+    document.getElementById('btn-next').innerText = appState.currentIdx === appState.questions.length - 1 ? "結果を解析する" : "次へ";
 }
 
 function renderResult() {
     const isJa = appState.lang === 'ja';
-    document.getElementById('ui-action-plan').innerText = isJa ? "■ マネジメント・アクションプラン" : "■ Management Action Plan";
-    document.getElementById('ui-affinity').innerText = isJa ? "■ 組織内シナジー・マトリックス" : "■ Organizational Synergy Matrix";
-    if(document.getElementById('btn-share-x')) document.getElementById('btn-share-x').innerText = isJa ? "結果を共有する" : "Share Result";
-    document.getElementById('btn-home').innerText = isJa ? "ホームに戻る" : "Back to Home";
+    document.getElementById('ui-action-plan').innerText = "■ マネジメント・アクションプラン";
+    document.getElementById('btn-home').innerText = "ホームに戻る";
 }
 
 function renderHelp() {
-    const isJa = appState.lang === 'ja';
-    document.getElementById('ui-help-title').innerText = isJa ? "コンピテンシー・クラス一覧" : "Competency Class List";
-    document.getElementById('ui-help-desc').innerText = isJa ? "心理的資本(HERO)に基づく全16タイプの定義" : "Definitions of all 16 types based on HERO";
-    document.getElementById('btn-close-help').innerText = isJa ? "閉じる" : "Close";
+    document.getElementById('ui-help-title').innerText = "コンピテンシー・クラス一覧";
+    document.getElementById('btn-close-help').innerText = "閉じる";
     
     const helpList = document.getElementById('help-list');
     helpList.innerHTML = '';
-
     for (const [key, data] of Object.entries(heroData.types)) {
         const div = document.createElement('div');
         div.style.borderBottom = "1px solid var(--border-color)"; 
-        div.style.paddingBottom = "16px"; 
-        div.style.marginBottom = "16px";
+        div.style.paddingBottom = "16px"; div.style.marginBottom = "16px";
         div.innerHTML = `<div style="color: var(--accent-color); font-size: 15px; font-weight: 600; margin-bottom: 6px;">[${key}] ${data.title[appState.lang]}</div>
                          <div style="font-size: 13px; line-height: 1.6; color: #444;">${data.profile[appState.lang]}</div>`;
         helpList.appendChild(div);
@@ -185,32 +125,30 @@ document.getElementById('lang-toggle').addEventListener('click', () => {
 
 window.showHelp = () => setState({ screen: 'help' });
 window.closeHelp = () => setState({ screen: 'home' });
-window.goHome = () => setState({ screen: 'home', affinityResult: null });
+window.goHome = () => setState({ screen: 'home' });
 
 window.abortQuiz = () => {
-    if(confirm(appState.lang === 'ja' ? 'アセスメントを中断してホームに戻りますか？' : 'Abort the assessment and return to Home?')) {
+    if(confirm('アセスメントを中断してホームに戻りますか？')) {
         setState({ screen: 'home' });
     }
 };
 
+// 【変更点】コース選択時はクイズではなく入力フォームへ遷移
 window.startQuiz = (tier) => {
     setState({ screen: 'entry', pendingTier: tier });
-    
-    // フォームをリセット
     document.getElementById('input-emp-id').value = '';
     document.getElementById('select-dept').value = '';
     document.getElementById('select-role').value = '';
     document.getElementById('check-consent').checked = false;
 };
 
-// 入力画面で「同意して開始」を押した時の処理
+// 【新規】同意して開始ボタンの処理
 window.beginAssessment = () => {
     const empId = document.getElementById('input-emp-id').value.trim();
     const dept = document.getElementById('select-dept').value;
     const role = document.getElementById('select-role').value;
     const consent = document.getElementById('check-consent').checked;
 
-    // バリデーション（入力チェック）
     if (!empId || !dept || !role) {
         alert("すべての必須項目（氏名、部署、役職）を入力してください。");
         return;
@@ -220,7 +158,6 @@ window.beginAssessment = () => {
         return;
     }
 
-    // チェックを通過したらクイズ画面へ
     const tier = appState.pendingTier;
     setState({
         screen: 'quiz',
@@ -233,8 +170,7 @@ window.beginAssessment = () => {
 };
 
 window.handleAnswer = (qId, value) => {
-    const newAnswers = { ...appState.answers, [qId]: value };
-    setState({ answers: newAnswers });
+    setState({ answers: { ...appState.answers, [qId]: value } });
 };
 
 window.prevQuestion = () => {
@@ -244,7 +180,7 @@ window.prevQuestion = () => {
 window.nextQuestion = () => {
     const qId = appState.questions[appState.currentIdx].id;
     if (!appState.answers[qId]) {
-        alert(appState.lang === 'ja' ? '回答を選択してください' : 'Please select an option');
+        alert('回答を選択してください');
         return;
     }
     if (appState.currentIdx < appState.questions.length - 1) {
@@ -256,7 +192,6 @@ window.nextQuestion = () => {
 
 function calculateAndSaveResult() {
     const { typeStr, percentages } = calculateScore(appState.questions, appState.answers);
-
     const resultData = heroData.types[typeStr] || heroData.types[Object.keys(heroData.types)[0]];
     const titleStr = resultData.title[appState.lang];
     
@@ -264,14 +199,16 @@ function calculateAndSaveResult() {
     const dateStr = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
     const newHistory = [{ date: dateStr, type: typeStr, title: titleStr, tier: appState.tier, percentages: percentages }, ...appState.history];
     
-    const companyId = localStorage.getItem('hero_enterprise_cid') || 'GuestCompany';
+    localStorage.setItem('hero_enterprise_history', JSON.stringify(newHistory));
+    setState({ history: newHistory });
 
-    // 送信するデータを拡張
+    // --- 企業IDと入力データの送信 ---
+    const companyId = localStorage.getItem('hero_enterprise_cid') || 'GuestCompany';
     const payload = {
         companyId: companyId,
-        employeeId: appState.employeeInfo.id,     // 追加: 社員番号/氏名
-        department: appState.employeeInfo.dept,   // 追加: 部署
-        role: appState.employeeInfo.role,         // 追加: 役職
+        employeeId: appState.employeeInfo.id,
+        department: appState.employeeInfo.dept,
+        role: appState.employeeInfo.role,
         date: dateStr,
         type: typeStr,
         title: titleStr,
@@ -279,13 +216,6 @@ function calculateAndSaveResult() {
         percentages: percentages
     };
 
-    // 企業版用のキー名に変更
-    localStorage.setItem('hero_enterprise_history', JSON.stringify(newHistory));
-    
-    setState({ history: newHistory });
-    displayResultScreen(typeStr, percentages);
-
-    // Vercel APIプロキシを経由して送信
     fetch('/api/save-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -293,63 +223,27 @@ function calculateAndSaveResult() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('データ同期:', data);
+        console.log('API Response:', data);
         if (data.sheetUrl) showPortfolioLink(data.sheetUrl, companyId);
     })
-    .catch(err => console.error('同期エラー:', err));
+    .catch(err => console.error('API Error:', err));
 
     displayResultScreen(typeStr, percentages);
 }
 
-// ポートフォリオ用のDB確認リンクUI
-function showPortfolioLink(url, companyId) {
-    const resultScreen = document.getElementById('screen-result');
-    const div = document.createElement('div');
-    div.style.marginTop = "24px";
-    div.style.padding = "16px";
-    div.style.border = "1px solid #28a745";
-    div.style.backgroundColor = "#eafbf0";
-    div.style.borderRadius = "6px";
-    div.style.textAlign = "center";
-    
-    div.innerHTML = `
-        <strong style="color:#28a745; font-size:14px;">【管理者ダッシュボード連携テスト】</strong><br>
-        <span style="font-size:13px; color:#333;">${companyId} 専用の組織データテーブルが更新されました。</span><br>
-        <a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; background:#28a745; color:#fff; padding:8px 16px; border-radius:4px; text-decoration:none; font-size:14px; font-weight:bold;">
-            バックエンドDBを確認
-        </a>
-    `;
-    resultScreen.appendChild(div);
-}
-
 window.loadResultFromHistory = (index) => {
     const item = appState.history[index];
-    let percs = item.percentages;
-    if (!percs) {
-        percs = {
-            H: item.type[0] === 'H' ? 80 : 20,
-            E: item.type[1] === 'H' ? 80 : 20,
-            R: item.type[2] === 'H' ? 80 : 20,
-            O: item.type[3] === 'H' ? 80 : 20
-        };
-    }
-    displayResultScreen(item.type, percs);
+    displayResultScreen(item.type, item.percentages || {H:50, E:50, R:50, O:50});
 };
 
 function displayResultScreen(typeStr, percentages) {
     const resultData = heroData.types[typeStr] || heroData.types[Object.keys(heroData.types)[0]];
-    const titleStr = resultData.title[appState.lang];
     
-    const text = appState.lang === 'ja' 
-        ? `心理的資本アセスメント(HERO)の解析結果：\n私のコンピテンシークラスは【 ${typeStr} : ${titleStr} 】でした。\n\n`
-        : `HERO Psychological Capital Assessment:\nMy competency class is [ ${typeStr} : ${titleStr} ].\n\n`;
-
     document.getElementById('result-type').innerText = `Class: ${typeStr}`;
-    document.getElementById('result-title').innerText = titleStr;
+    document.getElementById('result-title').innerText = resultData.title[appState.lang];
     document.getElementById('result-profile').innerText = resultData.profile[appState.lang];
     document.getElementById('result-action').innerText = resultData.action_plan[appState.lang];
     
-    // 画像アセットの代わりにスタイリッシュなタイポグラフィでタイプ名を表現
     const imgContainer = document.querySelector('#screen-result div[style*="width: 80px"]');
     imgContainer.innerHTML = `<span style="font-size: 20px; font-weight: bold; color: var(--accent-color); line-height: 80px; letter-spacing: 2px;">${typeStr}</span>`;
 
@@ -357,52 +251,39 @@ function displayResultScreen(typeStr, percentages) {
         document.getElementById(`bar-${cat}`).style.width = `${percentages[cat.toUpperCase()]}%`;
     });
 
-    generateAffinityList(typeStr);
-    setState({ screen: 'result', shareText: text });
+    setState({ screen: 'result' });
 }
 
-function generateAffinityList(baseType) {
-    const affinityListDiv = document.getElementById('affinity-list');
-    affinityListDiv.innerHTML = '';
-    let results = [];
+// ポートフォリオ用：生成されたスプレッドシートへのリンクを表示
+function showPortfolioLink(url, companyId) {
+    const resultScreen = document.getElementById('screen-result');
+    const div = document.createElement('div');
+    div.id = "portfolio-link-box"; // 複数追加防止用
+    div.style.marginTop = "24px"; div.style.padding = "16px"; div.style.border = "1px solid #28a745";
+    div.style.backgroundColor = "#eafbf0"; div.style.borderRadius = "6px"; div.style.textAlign = "center";
     
-    for (const [targetType, targetData] of Object.entries(heroData.types)) {
-        const affData = calcAffinityLogic(baseType, targetType, appState.lang);
-        results.push({ type: targetType, title: targetData.title[appState.lang], score: affData.score, relation: affData.relation });
-    }
+    div.innerHTML = `
+        <strong style="color:#28a745; font-size:14px;">【管理者ダッシュボード連携テスト】</strong><br>
+        <span style="font-size:13px; color:#333;">${companyId} 専用の組織データテーブルが自動更新されました。</span><br>
+        <a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:10px; background:#28a745; color:#fff; padding:8px 16px; border-radius:4px; text-decoration:none; font-size:14px; font-weight:bold;">
+            バックエンドDB（スプレッドシート）を確認
+        </a>
+    `;
     
-    results.sort((a, b) => b.score - a.score).forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'affinity-item';
-        div.innerHTML = `<div class="affinity-type">[${item.type}]</div><div class="affinity-title">${item.title}</div>
-                         <div class="affinity-score-box"><span class="affinity-relation">${item.relation}</span><strong style="color:#222;">${item.score}</strong></div>`;
-        affinityListDiv.appendChild(div);
-    });
+    // 既にリンクがあれば消す（再テスト時）
+    const existing = document.getElementById('portfolio-link-box');
+    if(existing) existing.remove();
+    
+    // ホームに戻るボタンの前に挿入
+    const btnHome = document.getElementById('btn-home');
+    resultScreen.insertBefore(div, btnHome);
 }
-
-window.checkQuickAffinity = () => {
-    const resultData = calcAffinityLogic(appState.affinityA, appState.affinityB, appState.lang);
-    setState({ affinityResult: resultData });
-};
 
 window.clearHistory = () => {
-    if(confirm(appState.lang === 'ja' ? '受診履歴をすべて消去しますか？' : 'Clear all assessment history?')) {
+    if(confirm('受診履歴をすべて消去しますか？')) {
         localStorage.removeItem('hero_enterprise_history');
         setState({ history: [] });
     }
 };
 
-window.shareOnX = () => {
-    const url = "https://wearehero.vercel.app/";
-    const hashtags = "心理的資本,HEROアセスメント,組織開発";
-    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(appState.shareText)}&url=${encodeURIComponent(url)}&hashtags=${hashtags}`;
-    window.open(intentUrl, '_blank', 'noopener,noreferrer');
-};
-
 render();
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('SW error: ', err));
-    });
-}
