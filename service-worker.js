@@ -1,5 +1,5 @@
 // アップデートのトリガーとなるバージョン管理
-const CACHE_VERSION = 'v6-enterprise'; 
+const CACHE_VERSION = 'v7-enterprise'; 
 const CACHE_NAME = `hero-pwa-cache-${CACHE_VERSION}`;
 
 // キャッシュ対象の静的アセット
